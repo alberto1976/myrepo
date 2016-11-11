@@ -1,0 +1,3198 @@
+---
+title: "Funciones Dplyr"
+author: "Daniel Rodriguez Chaves"
+date: "Martes, 26 de julio del 2016"
+output:
+  html_document:
+    fig_height: 4
+    fig_width: 6
+    toc: TRUE
+    toc_float: TRUE
+    #theme: simplex
+    theme: flatly
+    #theme: journal
+    #theme: readable
+    highlight: espresso
+    #highlight: zenburn
+    #number_sections: true
+  pdf_document:
+    fig_height: 4
+    fig_width: 6
+  word_document:
+    fig_height: 4
+    fig_width: 6
+font_adjustment: -1
+---
+## Función `n()`
+**Propósito:** 
+
+Sirve para contar el número de distintas observaciones que hay dentro de cada grupo. 
+
+
+**Características importantes**
+
+Esta función fue implementada sólo para ser usada dentro de **summarise, mutate** y **filter**.
+
+
+**Ejemplo:**
+
+```{r,eval=TRUE,echo=TRUE,results='hide',warning=FALSE,error=FALSE,message=FALSE}
+require("nycflights13")
+require("dplyr")
+```
+
+```{r,message=FALSE}
+  carriers <-group_by(flights, carrier)
+  head(summarise(carriers, n()),3)
+```
+
+
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+  mutate(carriers, n = n()) #Añade la columna n
+  
+```
+
+```{r,message=FALSE,warning=FALSE,error=FALSE}
+  filter(carriers, n() < 100)
+  
+```
+
+## Función `n_distict()`
+**Propósito:** 
+
+Cuenta el número de valores únicos en las observaciones de un vector.
+
+
+**Argumentos**
+
+    ...           Vectores de valores
+    
+    na.rm         T/F Si es T los valores faltantes no se cuentan
+
+
+**Características importantes**
+
+Es una manera más rápida y concisa de hacer length(unique(x))
+
+
+
+**Ejemplo:**
+```{r}
+x <- sample(1:10, 1e5, rep = TRUE)
+length(unique(x))
+n_distinct(x)
+n_distinct(iris$Species)
+```
+
+## Función `n_groups()`
+**Propósito:** 
+
+Cuenta el número de grupos.
+
+
+**Argumentos**
+
+    tbl       Una tabla (tbl) agrupada
+
+**Características importantes**
+
+    --  
+
+
+**Ejemplo:**
+```{r,eval=TRUE,echo=TRUE,results='hide',warning=FALSE,error=FALSE,message=FALSE}
+require("nycflights13")  
+```
+
+```{r}
+by_day <- flights %>% group_by(year, month, day)
+  n_groups(by_day)  
+  by_dest <- flights %>% group_by(dest)
+  n_groups(by_dest)
+```
+
+## Función `na_if()`
+**Propósito:** 
+
+Convierte valores a NA
+
+
+**Argumentos**
+
+    x     El vector a modificar
+    
+    y     Si x[.]==y entonces a x[.] lo remplaza a NA
+
+**Características importantes**
+
+    **y** debe ser de la misma longitud de x o de longitud 1
+
+
+**Ejemplo:**
+
+```{r}
+na_if(1:5, 5:1)
+x <- c(1, -1, 0, 10)
+100 / x
+100 / na_if(x, 0)
+```
+
+
+```{r}
+y <- c("abc", "def", "", "ghi")
+na_if(y, "")
+#na_if(1:5, 5:4)
+```
+
+La última linea no se puede ejecutar ya que los vectores no tienen la misma longitud.
+
+## Función `named_commas()`/
+**Propósito:** 
+
+Toma los parámetros y los coloca en una cadena de caracteres (string) separandolos por comas.
+
+
+**Argumentos**
+
+    ...     Argumentos para convertir en la cadena de caracteres, deben ir
+            separados por comas y quedan separados por comas dentro de la
+            cadena
+
+**Características importantes**
+
+Parece que es base de otras funciones, no aparece en la ayuda del paquete y no se encuentran ejemplos. No hay problemas al parecer si no coincide el tipo de estructura entre los elementos, pueden ser, por ejemplo, un número, un caracter, un data.frame, una tbl, etc..
+
+
+**Ejemplo:**
+
+```{r}
+named_commas("a,b","casa")
+named_commas(1,"23")
+```
+
+```{r}
+df<-data.frame(a = c(1, 3, 4, 6, 3, 2, 5, 1), b = c(1, 3, 4, 
+2, 6, 7, 2, 6), c = c(6, 3, 6, 5, 3, 6, 5, 3), d = c(6, 2, 4, 
+5, 3, 7, 2, 6), e = c(1, 2, 4, 5, 6, 7, 6, 3), f = c(2, 3, 4, 
+2, 2, 7, 5, 2))
+dt<-as.tbl(df)
+named_commas(dt,df)
+named_commas(dt,df,1,"a")
+
+```
+
+## Función `near()`
+**Propósito:** 
+
+Compara dos vectores numéricos
+
+**Argumentos**
+
+    x,y      Vectores numéricos para comparar
+    
+    tol      Tolerancia de la comparación
+
+
+**Características importantes**
+
+Compara si dos vectores numéricos son iguales punto a punto pero permite añadir un nivel de tolerancia a la discrepancia
+
+
+**Ejemplo:**
+
+```{r}
+sqrt(2) ^ 2 == 2
+near(sqrt(2) ^ 2, 2)
+near(sqrt(3) ^ 2, 2,t=1)
+```
+
+## Función `nth()`
+**Propósito:** 
+
+Extrae el primer, el último o el n-ésimo valor de un vector
+
+**Argumentos**
+
+    x           Un vector
+      
+    n           Número entero indicando la posición. Si es
+                negativo lo cuenta desde atrás
+                
+    order_by    Un vector opcional para determinar el orden
+    
+    default     Un valor para usar si la posición no existe 
+                en el vector
+
+**Características importantes**
+
+    nth(x, n, order_by = NULL, default = default_missing(x))
+
+    first(x, order_by = NULL, default = default_missing(x))
+
+    last(x, order_by = NULL, default = default_missing(x))
+
+
+**Ejemplo:**
+
+```{r}
+x <- 1:10
+y <- 10:1
+g<-c(2,4,6,8,10,1,3,5,7,9)
+nth(x, 1)
+nth(x, 5)
+nth(x,5,g)
+```
+
+
+```{r}
+nth(x,-2)
+nth(x, 11)
+last(x)
+last(x, order_by=y) 
+```
+
+## Función `ntile()`
+**Propósito:** 
+
+Particiona un vector entre n grupos de valores que esten relativamente cerca
+
+**Argumentos**
+
+    x      Un vector de valores al cual se le desea asignar rangos
+    n      Número de grupos en los que se va a particionar
+
+**Características importantes**
+
+El último grupo es el único que va a quedar con un número distinto de conformantes
+
+
+**Ejemplo:**
+
+```{r}
+x <- c(5, 1, 3, 2, 2, NA)
+ntile(x, 2)
+ntile(x, 3)
+ntile(x, 4)
+```
+
+
+```{r}
+ntile(runif(100), 10)
+```
+
+## Función `num_range()`
+**Propósito:** 
+
+Auxiliar para seleccionar columnas por su nombre cuando este es de la forma x01, x02, ..., x10, ...
+
+**Argumentos**
+
+    prefix     El prefijo que comienza la secuencia numérica
+    
+    range      Una secuencia de enteros 1:5 
+    
+    width      (default=NULL) Si es igual a 2 entonces 01, ..., 05
+               si es 3 entonces 001,...,005
+
+
+
+
+**Ejemplo:**
+```{r,eval=TRUE,echo=TRUE,results='hide',warning=FALSE,error=FALSE,message=FALSE}
+require(hflights)
+require(tidyr)
+```
+
+
+```{r}
+head(hflights%>% 
+       extract(TailNum,c("t1","t2","t3","t4","t5","t6"),"([[:alpha:]]+)
+               ([[:digit:]]+)([[:digit:]]+)([[:digit:]]+)([[:alpha:]]+)
+               ([[:alpha:]]+)")%>%select(num_range("t",1:6)),2)
+```
+
+## Función `nycflights13_postgres()!` 
+**Propósito:** 
+
+??
+
+**Argumentos**
+
+    dbname   Nombre de la base de datos 
+    
+    ...      Argumentos que se le pasarán a src_postgres()
+
+**Características importantes**
+
+Se usa en particular para hacer ejemplos y para crear las viñetas, es necesario tener las librerias "RPostgreSQL" y "nycflights13"
+
+
+**Ejemplo:**
+
+```{r,eval=FALSE}
+require("RPostgreSQL")
+require("nycflights13")
+nycflights13_postgres(dbname = "nycflights13",...)
+```
+
+## Función `nycflights13_sqlite()`
+
+**Propósito:** 
+
+Permite crear una tabla de extensión .sqlite desde la libreria "nycflights13" 
+
+**Argumentos**
+
+    path     Localización de la base de sqlite
+
+**Características importantes**
+
+Se usa en particular para hacer ejemplos y para crear las viñetas, es necesario tener las librerias"RSQLite" y "nycflights13"
+
+**Ejemplo:**
+```{r,eval=TRUE,echo=TRUE,results='hide',warning=FALSE,error=FALSE,message=FALSE}
+require("RSQLite")
+require("nycflights13")
+require("Lahman")
+```
+
+```{r}
+nycflights13_sqlite(path = NULL)
+```
+
+## Función `one_of()`
+**Propósito:** 
+
+Auxiliar para seleccionar columnas por su nombre
+
+**Argumentos**
+
+    ...    Uno o más vectores de caracteres
+    
+    vars   Un vetor de caracteres con los nombres de las variables
+
+
+
+**Ejemplo:**
+
+```{r}
+vars <- c("Petal.Length", "Petal.Width")
+head(select(iris, one_of(vars)))
+```
+
+## Función `order_by()`
+**Propósito:** 
+
+Permite organizar el resultado de aplicar una función
+
+**Argumentos**
+
+    order_by     Un vector que nos indicará como ordenar los resultados
+    
+    call         Una ""window function"" donde el primer argumento es el 
+                 vector al que se le aplicará la función
+                 
+"window function":::Una función que toma n valores y produce n resultados
+
+
+
+**Ejemplo:**
+
+```{r}
+order_by(10:1, cumsum(1:10))
+x <- 10:1
+y <- 1:10
+order_by(x, cumsum(y))
+df <- data.frame(year = 2000:2005, value = (0:5) ^ 2)
+scrambled <- df[sample(nrow(df)), ]
+```
+
+
+```{r}
+#Intento de sumar los valores de value en orden cronológico
+wrong <- mutate(scrambled, running = cumsum(value))
+arrange(wrong, year)
+right <- mutate(scrambled, running = order_by(year, cumsum(value)))
+arrange(right, year)
+```
+
+## Función `partial_eval()`!
+**Propósito:** 
+
+Esta función evalúa parcialmente una expresión, usando información de la tbl para determinar si los nombres se refieren a expresiones locales o a variables remotas.
+
+**Argumentos**
+
+    call   Una expresión sin evaluar, como la producida por quote()
+    
+    tbl    Un objeto tbl
+    
+    env    El entorno(enviroment) en el cual buscar valores locales"
+
+**Características importantes**
+
+Esto simplifica la traducción SQL porque las expresiones no dependen del entorno, toda la información reelevante se incorpora en la expresión
+
+
+**Ejemplo:**
+
+```{r,eval=FALSE}
+ 
+  bdf <- tbl_df(Batting)
+  partial_eval(quote(yearID > 1980), bdf)
+  ids <- c("ansonca01", "forceda01", "mathebo01")
+  partial_eval(quote(id %in% ids), bdf)
+  # You can use local to disambiguate between local and remote
+  # variables: otherwise remote is always preferred
+  yearID <- 1980
+  partial_eval(quote(yearID > yearID), bdf)
+  partial_eval(quote(yearID > local(yearID)), bdf)
+  # Functions are always assumed to be remote. Use local to force evaluation
+  # in R.
+  f <- function(x) x + 1
+  partial_eval(quote(yearID > f(1980)), bdf)
+  partial_eval(quote(yearID > local(f(1980))), bdf)
+  # For testing you can also use it with the tbl omitted
+  partial_eval(quote(1 + 2 * 3))
+  x <- 1
+  partial_eval(quote(x ^ y))
+
+```
+
+## Función `percent_rank()`
+**Propósito:** 
+
+Reescala la función min_rank() al intervalo [0,1] y lo que hace es dar rangos (en el intervalo [0,1]) a los valores de un vector al intervalo 
+
+**Argumentos**
+
+    x    Un vector de valores al cual asignar rangos. 
+
+**Características importantes**
+
+Los valores faltantes no se toman en cuenta, si se quieren tomar como los más pequeños o los más grandes se deben reemplazar por -Inf o Inf respectivamente
+
+
+**Ejemplo:**
+
+```{r}
+x <- c(5, 1, 3, 2, 2, NA)
+min_rank(x)
+percent_rank(x)
+```
+
+## Función `progress_estimated()`
+**Propósito:** 
+
+Produce una barra de progreso estimando el tiempo restante. Cuando se ha finalizado, produce la duración total. 
+
+**Argumentos**
+
+    n          Número total de progresos
+    
+    min_time   La barra de progreso esperará al menos este tiempo antes de         
+               mostrar cualquier resultado
+
+**Características importantes**
+
+Puede ser deshabilitada ajustando el valor  de dplyr.show_progress=F
+
+
+**Ejemplo:**
+
+```{r,eval=FALSE}
+p <- progress_estimated(3)
+p$tick()
+p$tick()
+p$tick()
+p <- progress_estimated(3)
+for (i in 1:3) p$pause(0.1)$tick()$print()
+for (i in 1:3) p$pause(3)$tick()$print()
+p <- progress_estimated(3)
+p$tick()$print()$pause(1)$stop()
+# If min_time is set, progress bar not shown until that many
+# seconds have elapsed
+p <- progress_estimated(3, min_time = 3)
+for (i in 1:3) p$pause(0.1)$tick()$print()
+## Not run: 
+p <- progress_estimated(10, min_time = 3)
+```
+
+--Ejecutar el ejemplo en la consola--
+
+## Funciones rbind_all() y rbind_list()
+
+
+**Características importantes**
+
+Estas funciones han quedado obsoletas y han entrado a ser reemplazadas por bind_rows()
+
+## Función `recode()`
+**Propósito:** 
+
+Recodifica valores, reemplaza números basandose en su posición y los caracteres por sus nombres 
+
+**Argumentos**
+
+    .x            Un vector para modificar
+    
+    ...           Reemplazamientos. Deben ser nombrados para caracteres y
+                  pueden serlo para los números
+                  Todos los reemplazamientos deben ser del mismo tipo y
+                  deben tener longitud uno o la misma longitud de x
+                  
+    .default      Si se proporciona todos los valores que no fueron
+                  reemplazados serán reemplazados por este. Debe ser de
+                  longitud uno o .x
+                  
+    .misssing     Si se proporciona, cualquier valor faltante de .x será 
+                  reemplazado por este valor"
+
+**Características importantes**
+
+(para valores dicotómicos usar if-else), si el reemplazo no es del mismo tipo del valor que se va a reemplazar el resultado es NA
+
+
+**Ejemplo:**
+
+
+```{r}
+# Recodifica valores con nombres
+x <- sample(c("a", "b", "c"), 10, replace = TRUE)
+recode(x, a = "Apple")
+recode(x, a = "Apple", .default = NA_character_)
+recode(x, a = "Apple", .default = "Vaca")
+```
+
+
+```{r}
+# Funciona con valores numéricos
+x <- c(1:5, NA)
+recode(x, `2` = 20L, `4` = 40L)
+# Notese que si los reemplazamientos no son compatibles con .x, 
+# los valores no reemplazados y que no coinciden son reemplazados
+# por NA y un mensaje de warning es presentado
+recode(x, `2` = "b", `4` = "d")
+```
+
+
+```{r}
+# Si no se nombran los argumentos se reemplazarán por la posición
+recode(x, "a", "b", "c")
+recode(x, "a", "b", "c", .default = "other")
+recode(x, "a", "b", "c", .default = "other", .missing = "missing")
+```
+
+```{r}
+# Supla el default con levels() para factores
+x <- factor(c("a", "b", "c"))
+recode(x, a = "Apple", .default = levels(x))
+recode(x, a = "Apple")
+```
+
+## Función `recode_factor()`
+**Propósito:** 
+
+Recodifica valores, reemplaza números basandose en su posición y los caracteres por sus nombres, el resultado es un vector de factores ordenados
+
+**Argumentos**
+
+    .x        Un vector para modificar
+    ...       Reemplazamientos.
+              Deben ser nombrados para caracteres y pueden serlo para los 
+              números
+              Todos los reemplazamientos deben ser del mismo tipo y deben
+              tener longitud uno o la misma longitud de x
+    .default  Si se proporciona todos los valores ue no fueron reemplazados 
+              serán reemplazados por este. Debe ser de longitud uno o .x
+    .misssing Si se proporciona, cualquier valor faltante de .x será 
+              reemplazado por este valor
+    .ordered  T/F Si es T, crea un vector de factores ordenados
+
+
+
+
+**Ejemplo:**
+```{r}
+# Use recode_factor() para crear factores con niveles ordenados como ellos 
+# aparecen en la recodificación. Los niveles en .default y .missing
+# vienen al final.
+x <- c(1:4, NA)
+recode_factor(x, `1` = "z", `2` = "y", `3` = "x")
+recode_factor(x, `1` = "z", `2` = "y", .default = "D")
+```
+
+
+```{r}
+recode_factor(x, `1` = "z", `2` = "y", .default = "D", .missing = "M")
+# Cuando el el vector de entrada es compatible ( de caracteres o de factores)
+# Este se reusa como default.
+recode_factor(letters[1:3], b = "z", c = "y")
+recode_factor(factor(letters[1:3]), b = "z", c = "y")
+```
+
+## Función `regroup()`
+
+
+**Características importantes**
+
+Obsoleta, use en su lugar group_by_
+
+## Función `rename()`
+**Propósito:** 
+
+Renombra las variables y las mantiene todas
+
+**Argumentos**
+
+    .data   Una tbl.
+    
+    ...     Expresiones para cambiar los nombres separados por comas. Los 
+            nombres se pueden tratar como si fueran posiciones."
+
+
+
+**Ejemplo:**
+```{r}
+# rename() mantiene todas las variables
+rename(iris, petal_length = Petal.Length)%>%head()
+```
+
+## Función `rename_vars_()`
+**Propósito:** 
+
+Versión prueba de rename_vars
+
+**Argumentos**
+
+    vars  Un vector de caracteres con los nombres de variables existentes
+    args  Argumentos usados para indicar como hacer el cambio 
+
+**Características importantes**
+
+No pude construir el ejemplo, se supone que es una versión de prueba en caso de que la función original no funcione correctamente en algún caso, está es la que se corrige para usarse y sólo se actualiza la original cuando se actualiza el paquete: http://stackoverflow.com/questions/26619329/dplyr-rename-standard-evaluation-function-not-working-as-expected (CtrlF-rename_vars_)
+
+
+
+**Ejemplo:**
+
+```{r,eval=FALSE}
+rename_vars_(as.character(names(iris)), 
+             .dots=setNames("petal_length", "Petal.Length"))
+```
+
+## Función `right_join()`
+**Propósito:** 
+
+Retorna todas las filas de y, además de todas las columnas de x,y. Si las filas y no tienen valor de x, entonces se asignaran valores de NA.
+
+**Argumentos**
+
+right_join(x, y, by = NULL, copy = FALSE, suffix = c("".x"", "".y""), ...)
+
+    x,y     Tablas para juntar (tbl)
+    
+    by      (=NULL) Un vector de caracteres indicando cuales son las 
+            variables para hacer la operación o juntar.
+            
+    copy    T/F Si x e y no son del mismo tipo de datos (data sources, i.e.
+            bases relacionales, bases no relacionales, incluso archivos de
+            texto) y si es T se copiara el tipo de datos de x en y
+            
+    suffix  Si hay variables duplicadas no juntadas en x e y, estos
+            suffixes se adicionarán a la salida para eliminarles la
+            ambigüedad
+
+
+**Características importantes**
+
+Si hay multiples valores de x,y se retornaran todos ellos, copy si se requiere resulta en un proceso costoso computacionalmente y no es el más óptimo
+
+
+**Ejemplo:**
+
+```{r}
+x<-data.frame(
+  A=c(1,2,3,4),
+  B=c("a","b","b","b"),
+  C=c("x","y","x","x"))
+y<-data.frame(
+  B=c("a","a","b","b")
+  , C=c("x","y","x","x"),
+  D=c("u","v","u","v"))
+right_join(x,y,by = c("B", "C"))
+```
+
+
+```{r}
+right_join(x,y,by = c("B"="B", "C"="C"))
+right_join(x,y)
+```
+
+## Función `row_number()`
+**Propósito:** 
+
+Asigna rangos a las filas de un vector, si hay valores repetidos les da las posiciones como están ordenados en el vector
+
+**Argumentos**
+
+    x  Vector al que se le quiere asignar los rangos
+
+**Características importantes**
+
+Es equivalente a rank(ties.method = "first"), si hay valores de NA los ignora
+
+
+**Ejemplo:**
+
+```{r}
+x <- c(5, 1, 3, 2, 2, NA)
+row_number(x)
+```
+
+## Función `rowwise()`
+**Propósito:** 
+
+Se usa para los resultados de do() cuando se crean list-variables (las variables son en realidad listas). Es útil, tambien, para realizar operacioens arbitrarias que necesitan ser aplicadas a cada fila
+
+**Argumentos**
+
+    Data frame
+
+**Características importantes**
+
+Do() permite aplicar funciones arbitrarias a una tabla
+
+
+**Ejemplo:**
+
+```{r}
+df <- expand.grid(x = 1:3, y = 3:1)
+df %>% rowwise() %>% do(i = seq(.$x, .$y))
+#.Last.value %>% summarise(n = length(i))
+```
+
+## Función `()`
+**Propósito:** 
+
+
+
+**Argumentos**
+
+
+
+**Características importantes**
+
+
+
+
+**Ejemplo:**
+
+-----------------------------------
+
+## Función `mutate_if()`
+**Propósito:** 
+
+Opera igual que mutate pero sólo sobre las columnas para las cuales el predicado resulta en TRUE
+
+**Argumentos**
+
+
+    .tbl    Una tabla
+    
+    .predicate  Una función predicado para ser aplicado a las 
+                columnas o a un vector lógico.
+    
+    .funs   Lista de funciones, o un vector de caracteres con los
+            nombres de las funciones, o simplemente una función
+    
+    ...     Argumentos adicionales para las funciones. Sólo serán
+            evaluados una vez
+
+
+
+
+**Ejemplo:**
+
+```{r}
+by_species <- iris %>% group_by(Species)
+by_species %>% mutate_if(is.numeric, mean)
+```
+
+## Función `same_src!()`
+**Propósito:** 
+
+Averigua si dos fuentes (sources) son la misma o si dos tablas tienen la misma fuente.
+
+**Argumentos**
+
+    x,y   src o tbl para probar
+
+
+**Ejemplo:**
+
+```{r}
+#Dos conjuntos de datos en Data(Global Environment)
+same_src(df,dt)
+src_memdb()
+uka <- memdb_frame(a=c(1,2),b=c("j","k"))
+uta <- memdb_frame(a=c(1,2),b=c(3,4))
+same_src(uta,uka)
+```
+
+```{r}
+src_memdb()
+x<-data.frame(a=c(1,2),b=c(3,4))
+uta <- memdb_frame(a=c(1,2),b=c(3,4))
+same_src(uta,x)
+```
+
+```{r,eval=FALSE,echo=TRUE,results='hide',warning=FALSE,error=FALSE,message=FALSE}
+same_src(src_df("Lahman"),src_df("nycflights13"))
+#Produce un error ya que estás dos fuentes de datos son de clase
+#"src_local" "src" y no permite compararlas
+```
+
+## Función `sample_n()`
+**Propósito:** 
+
+Obtiene una muestra de n elementos de una tabla.
+
+**Argumentos**
+
+    tbl     tbl de datos
+    
+    size    El número de filas a seleccionar
+    
+    replace T/F Con o sin reemplazamiento
+    
+    weight  Pesos muestrales. Son estandarizados automaticamente para que
+            sumen 1
+    
+    .env    Enviroment en donde buscar los nombres que no esten en los 
+            datos y se hallan usado en weight
+            
+**Características importantes** Si la tabla está agrupada se aplica la función a cada grupo.
+
+
+**Ejemplo:**
+
+```{r}
+sample_n(mtcars, 10)%>%head(2)
+sample_n(mtcars, 50, replace = TRUE)%>%head(2)
+sample_n(mtcars, 10, weight = mpg)%>%head(2)
+```
+
+
+```{r}
+by_cyl <- mtcars %>% group_by(cyl)
+
+sample_n(by_cyl, 3)
+```
+
+
+```{r}
+sample_n(by_cyl, 10, replace = TRUE)
+```
+
+
+```{r}
+sample_n(by_cyl, 3, weight = mpg / mean(mpg))
+```
+
+## Función `sample_frac()`
+**Propósito:** 
+
+Obtiene una muestra como una fracción del total de elementos de una tabla.
+
+**Argumentos**
+
+    tbl     tbl de datos
+    
+    size    La fracción de filas a seleccionar
+    
+    replace T/F Con o sin reemplazamiento
+    
+    weight  Pesos muestrales. Son estandarizados automaticamente para que
+            sumen 1
+    
+    .env    Entorno (enviroment) en donde buscar los nombres que no esten
+            en los datos y se hallan usado en weight
+            
+**Características importantes**
+
+Si la tabla está agrupada se aplica a cada grupo.
+
+
+**Ejemplo:**
+
+```{r}
+sample_frac(mtcars)
+```
+
+
+```{r}
+sample_frac(mtcars, 0.1)
+sample_frac(mtcars, 1.5, replace = TRUE)%>%head(2)
+sample_frac(mtcars, 0.1, weight = 1 / mpg)
+```
+
+
+```{r}
+sample_frac(by_cyl, 0.2)
+
+```
+
+
+```{r}
+sample_frac(by_cyl, 1, replace = TRUE)
+```
+
+## Función `select()`
+**Propósito:** 
+
+Selecciona un subconjunto de variables
+
+**Argumentos**
+
+    .data  Una tbl. 
+    
+    ...    Expresiones separadas por comas para seleccionar las variables
+           Se puede tratar los nombres de las variables como si fueran
+           posiciones. Use valores positivos para seleccionar variables y
+           negativos para dejar variables.
+
+**Características importantes**
+
+Existen funciones que sólo trabajan dentro del select()
+
+
+**Ejemplo:**
+
+```{r}
+iris <- tbl_df(iris) # Para que lo presente un poco mejor
+select(iris, starts_with("Petal"))
+
+```
+
+```{r,eval=FALSE}
+select(iris, ends_with("Width"))
+select(iris, contains("etal"))
+select(iris, Petal.Length, Petal.Width)
+vars <- c("Petal.Length", "Petal.Width")
+select(iris, one_of(vars))
+
+```
+
+
+```{r}
+# Evitar variables
+select(iris, -starts_with("Petal"))
+```
+
+
+```{r,eval=FALSE}
+select(iris, -ends_with("Width"))
+select(iris, -contains("etal"))
+select(iris, -Petal.Length, -Petal.Width)
+```
+
+```{r}
+# Renombrar variables:
+# select() mantiene sólo las variables que se especifiquen
+select(iris, petal_length = Petal.Length)%>%head(2)
+```
+
+
+```{r}
+# Renombrar multiples variables usando un prefijo
+select(iris, petal = starts_with("Petal"))%>%head(2)
+# Reordenar variables: matiene primero Species y luego las restantes
+select(iris, Species, everything())%>%head(2)
+```
+
+
+```{r}
+df <- as.data.frame(matrix(runif(100), nrow = 10))
+df <- tbl_df(df[c(3, 4, 7, 1, 9, 8, 5, 2, 6, 10)])
+select(df, V4:V6)
+```
+
+
+```{r}
+select(df, num_range("V", 4:6))
+```
+
+## Función `select_()`
+**Propósito:** 
+
+Versión en desarrollo de select()
+
+**Argumentos**
+
+    .data  Una tbl. 
+    
+    ...    Expresiones separadas por comas para seleccionar las variables
+           Se puede tratar los nombres de las variables como si fueran
+           posiciones. Use valores positivos para seleccionar variables y
+           negativos para dejar variables.
+           
+    .dots  Expresiones extra para hacer la selección.
+
+
+
+
+**Ejemplo:**
+
+```{r,eval=FALSE}
+select_(iris, ~Petal.Length)
+select_(iris, "Petal.Length")
+select_(iris, quote(-Petal.Length), quote(-Petal.Width))
+select_(iris, .dots = list(quote(-Petal.Length), quote(-Petal.Width)))
+```
+
+## Función `select_if()`
+**Propósito:** 
+
+Aplica un predicado a las columnas se la tbl y para aquellas que tome el valor TRUE las seleccionará.
+
+**Argumentos**
+
+    .data       Una tbl
+    
+    .predicate  Una función predicado para ser aplicada a las columnas
+    
+    ...         Argumentos adicionales que se le pasarán a .predicate
+
+
+**Características importantes**
+
+Es similar a summarise_if() y a mutate_if()
+
+
+**Ejemplo:**
+
+```{r}
+iris %>% select_if(is.factor)
+```
+
+
+```{r}
+iris %>% select_if(is.numeric)
+```
+
+```{r}
+#Creando una función un poco más compleja
+iris %>% select_if(function(col) is.numeric(col) && mean(col) > 3.5)
+```
+
+## Función `select_query!()`
+**Propósito:** 
+
+Sirve para hacer una consulta a una base de datos sql
+
+**Argumentos**
+
+select_query(from, select = sql("*"), where = character(),
+  group_by = character(), having = character(), order_by = character(),
+  limit = NULL, distinct = FALSE)
+
+**Características importantes**
+
+Llama a la función sql_select()
+
+**Ejemplo:**
+
+PENDIENTE
+```{r,eval=FALSE}
+flights_sqlite <- tbl(nycflights13_sqlite(), "flights")
+select_query(from=flights_sqlite,select = sql("*"))
+```
+
+
+## Función `select_vars()`
+**Propósito:** 
+
+Sirve para seleccionar un subconjunto de los nombres de las variables
+
+**Argumentos**
+
+    vars                 Un vector de caracteres con los nombres
+                         de las columnas
+    
+    ...                  Expresión para computar la selección
+    
+    include, exclude     Vector de caracteres con los nombres
+                         de las filas que siempre se incluyen 
+                         o se excluyen
+
+**Características importantes**
+
+Semántica similar a select()
+
+
+**Ejemplo:**
+
+```{r}
+select_vars(names(iris), everything())
+select_vars(names(iris), starts_with("Petal"))
+```
+
+
+```{r,eval=FALSE}
+select_vars(names(iris), ends_with("Width"))
+select_vars(names(iris), contains("etal"))
+select_vars(names(iris), Petal.Length, Petal.Width)
+select_vars(names(iris), one_of("Petal.Length", "Petal.Width"))
+select_vars(names(iris), -starts_with("Petal"))
+select_vars(names(iris), -ends_with("Width"))
+```
+
+## Función `select_vars_()`
+**Propósito:** 
+
+Sirve para seleccionar un subconjunto de los nombres de las variables. Versión en desarrollo de select_vars
+
+**Argumentos**
+
+    vars                 Un vector de caracteres con los nombres
+                         de las columnas
+    
+    args                 Expresión para computar la selección
+    
+    include, exclude     Vector de caracteres con los nombres
+                         de las filas que siempre se incluyen 
+                         o se excluyen
+
+
+
+**Ejemplo:**
+
+```{r}
+select_vars_(names(iris), list(~Petal.Length))
+select_vars_(names(iris), list(quote(Petal.Length)))
+select_vars_(names(iris), "Petal.Length")
+```
+
+## Función `semi_join()`
+**Propósito:** 
+
+Retorna todas las filas de x donde hay valores de y pero sólo mantiene las columnas de x
+
+**Argumentos**
+
+    x,y     Tablas para juntar (tbl)
+    
+    by      (=NULL) Un vector de caracteres indicando cuales son las 
+            variables para hacer la operación o juntar.
+            
+    copy    T/F Si x e y no son del mismo tipo de datos (data sources, 
+            i.e. bases relacionales, bases no relacionales, incluso
+            archivos de texto) y si es T se copiara el tipo de datos de
+            x en y
+
+
+
+**Ejemplo:**
+
+```{r}
+x<-data.frame(
+  A=c(1,2,3,4),
+  B=c("a","b","b","b"),
+  C=c("x","y","x","x"))
+y<-data.frame(
+  B=c("a","a","b","b")
+  , C=c("x","y","x","x"),
+  D=c("u","v","u","v"))
+semi_join(x,y,by = c("B", "C"))
+```
+
+## Función `semi_join_query!()`
+**Propósito:** 
+
+Indíca como hacer un semi_join entre dos bases en lenguaje sql
+
+**Argumentos**
+
+    x,y     Dos tablas de datos
+    
+    anti    T/F Si es T hará anti-join. Si es F será un semi-join
+    
+    by      (=NULL) Un vector de caracteres indicando cuales son las 
+            variables para hacer la operación o juntar.
+            
+semi_join_query(x, y, anti = FALSE, by = NULL)
+
+
+
+**Ejemplo:**
+
+pendiente...
+```{r,eval=FALSE}
+semi_join_query(x, y, anti = FALSE, by = NULL)
+semi_join_query(dt, dt,by=c("f"))
+```
+```{r}
+flights_sqlite <- tbl(nycflights13_sqlite(), "flights")
+flights_planes <- tbl(nycflights13_sqlite(), "planes")
+semi_join_query(flights_sqlite,flights_planes)
+```
+
+## Función `setdiff()`
+**Propósito:** 
+
+Entregar las observaciones de x que no esten en y.
+
+**Argumentos**
+
+    x,y   Objetos a los que se les aplicará la función
+    
+    ...   Otros argumentos que se le pasarán al método
+
+
+**Características importantes**
+
+Versión eficiente de diff{base} para trabajar con data frames y otros tipos de tablas
+
+
+**Ejemplo:**
+```{r}
+mtcars$model <- rownames(mtcars)
+first <- mtcars[1:20, ]
+second <- mtcars[10:32, ]
+setdiff(first, second)
+```
+
+
+```{r}
+setdiff(second, first)
+```
+
+## Función `setequal()`
+**Propósito:** 
+
+Indica si x e y son iguales.
+
+**Argumentos**
+
+    x,y   Objetos a los que se les aplicará la función
+    
+    ...   Otros argumentos que se le pasarán al método
+
+
+
+**Ejemplo:**
+```{r}
+setequal(mtcars, mtcars[32:1, ])
+setequal(mtcars, mtcars[32:2, ])
+setequal(src_df("Lahman"),src_df("nycflights13"))
+```
+
+## Función `show_query()`
+**Propósito:** 
+
+Esta función permite observar la operación de consulta que se va a realizar a una tabla alojada en una base de datos
+
+**Argumentos**
+
+    x  Un objeto a "traducir"
+
+
+
+**Ejemplo:**
+
+```{r,eval=TRUE,echo=TRUE,results='hide',warning=FALSE,error=FALSE,message=FALSE}
+require("RSQLite")
+```
+
+```{r}
+src_memdb()
+df <- memdb_frame(x = runif(100), y = runif(100))
+df%>% show_query()
+```
+
+
+```{r}
+df %>% arrange(x)
+```
+
+
+```{r}
+df %>% arrange(x) %>% show_query()
+```
+
+
+```{r}
+df%>%select(x)%>% arrange(x) %>% show_query()
+```
+
+## Función `slice()`
+**Propósito:** 
+
+Seleccionar filas por su posición
+
+**Argumentos**
+
+    .data  Una tbl
+    
+    ...    Números enteros de las filas
+
+**Características importantes**
+
+No funciona con tablas relacionales, ya que no tienen una noción de orden en las filas, en ese caso usar filter() y row_number().
+
+
+**Ejemplo:**
+
+```{r}
+slice(mtcars, 1L)
+slice(mtcars, n())
+```
+
+```{r}
+slice(mtcars, 5:n())
+```
+
+```{r}
+by_cyl <- group_by(mtcars, cyl)
+slice(by_cyl, 1:2)
+```
+
+## Función `slice_()`
+**Propósito:** 
+
+Versión de prueba y desarrollo de slice() para evaluación no estandar
+
+**Argumentos**
+
+    .data  Una tbl
+    
+    ...    Números enteros de las filas
+    
+    .dots  Usado para evaluación no estandar
+
+
+
+**Ejemplo:**
+
+```{r}
+slice_(mtcars, 1L)
+slice_(mtcars, ~n())
+slice_(mtcars, ~5:n())
+```
+
+
+
+## Función `sql()`
+**Propósito:** 
+
+Sirve para indicar que una cadena de caracteres está en código SQL, sin traducir la expresión. Es decir, se quiere indicar que esta cadena es tal y como se entrego.
+
+**Argumentos**
+
+    ...   Vector de caracteres que serán combinados en una sóla expresión
+          SQL
+
+**Características importantes**
+
+Esta función es crítica cuando escribimos funciones que traducen funciones de R a funciones a SQL. Generalmente una función de conversión debe tomar toda la entrada y regresar un objeto SQL. Esta función se encuentra implementada internamente dentro de otras funciones sql.
+
+
+**Ejemplo:**
+
+```{r}
+sql("expresion")
+ sql("expresión")
+ translate_sql(quote(y + 1 / sin(t)))
+ translate_sql(sql("quote(y + 1 / sin(t))"))
+```
+
+```{r}
+translate_sql(x == 1)
+ translate_sql(sql("x == 1"))
+ translate_sql(x+3<2+a*b)
+ translate_sql(sql("x+3<2+a*b"))
+```
+
+```{r}
+translate_sql(sql("x+3-2+a*b")>3 & !(y >= 5))
+x<-"TABLE"
+build_sql("SELECT * FROM ", sql(x))
+```
+
+## Función `sql_build()`
+**Propósito:** 
+
+Crea un objeto select_query, este es traducido a una cadena SQL por sql_render.  
+
+**Argumentos**
+
+    op    Una secuencia de lazy operations (Estas quedaron sin explicar
+          en la primer sesión porque no era claro que operaciones
+          realizaban)
+    
+    con   Una conexion a una base de datos
+    
+    ...   Otros argumentos pasados a los métodos. Generalmente no
+          se usan.
+    
+    
+
+**Características importantes**
+
+El resultado es diseñado para que sea sencillo de implementar.
+
+
+**Ejemplo:**
+
+PENDIENTE
+
+## Función `sql_escape_ident()`
+**Propósito:** 
+
+Método genérico usado para ejecutar queries de SQL.
+
+**Argumentos**
+
+    con  Una conexión a bases de datos
+    
+    x    Objeto a transformar
+
+**Características importantes:**
+Un conjunto de métodos de DBI(Data Base Interfaz) para cohesionar dplyr, y por lo tanto R, con DBI.
+
+
+**Ejemplo:**
+
+PENDIENTE
+
+## Función `sql_escape_string()`
+**Propósito:** 
+
+Método genérico usado para ejecutar queries de SQL.
+
+**Argumentos**
+
+    con  Una conexión a bases de datos
+    
+    x    Objeto a transformar
+
+**Características importantes:**
+Un conjunto de métodos de DBI(Data Base Interfaz) para cohesionar dplyr, y por lo tanto R, con DBI.
+
+
+**Ejemplo:**
+
+PENDIENTE
+
+## Función `sql_infix()`
+**Propósito:** 
+
+Cuando se crea un paquete que mapea a una nueva fuente SQL se quiere, frecuentemente, proveer algunos mapeos adicionales desde comandos comunes de R a los comandos que sus tablas proveen, esta función lo hace de manera sencilla.
+
+**Argumentos**
+
+    f   El nombre de una función sql como un cadena
+
+**Características importantes**
+
+Crea por default el infijo de una función SQL dado el nombre de la misma. No verifica el valor de entrada, pero escapa correctamente el valor entrante y es útil para proveer valores default para una nueva variante de SQL
+
+
+**Ejemplo:**
+
+PENDIENTE
+
+## Función `sql_join()`
+**Propósito:** 
+
+Método genérico usado para ejecutar queries de SQL.
+
+**Argumentos**
+
+    sql_join(con, x, y, type = "inner", by = NULL, ...)
+    
+    con  Una conexión a bases de datos
+    
+    x    Objeto a transformar
+
+
+
+**Ejemplo:**
+
+PENDIENTE
+
+## Función `sql_not_supported()`
+**Propósito:** 
+
+Cuando se crea un paquete que mapea a una nueva fuente SQL se quiere, frecuentemente, proveer algunos apeos adicionales desde comandos comunes de R a los comunados que sus tablas proveen, esta función lo hace sencilla.
+
+**Argumentos**
+
+    f   El nombre de una función sql como un cadena
+
+**Características importantes**
+
+Crea por default el infijo de una función SQL dado el nombre de la misma. No verifica el valor de entrada, pero escapa correctamente el valor entrante y es útil para proveer valores default para una nueva variante de SQL
+
+
+**Ejemplo:**
+
+PENDIENTE
+
+## Función `sql_prefix()`
+**Propósito:** 
+
+Cuando se crea un paquete que mapea a una nueva fuente SQL se quiere, frecuentemente, proveer algunos apeos adicionales desde comandos comunes de R a los comunados que sus tablas proveen, esta función lo hace sencilla.
+
+**Argumentos**
+
+    f   El nombre de una función sql como un cadena
+    
+    n   Un número opcional de argumentos esperados, enviara
+        un error si no funciona
+
+**Características importantes**
+
+Crea por default el infijo de una función SQL dado el nombre de la misma. No verifica el valor de entrada, pero escapa correctamente el valor entrante y es útil para proveer valores default para una nueva variante de SQL
+
+
+**Ejemplo:**
+
+PENDIENTE
+
+## Función `sql_quote()`
+**Propósito:** 
+
+Función auxiliar para citar elementos sql
+
+**Argumentos**
+
+    x       Vector de caracteres para escapar
+    
+    quote   Caracter unitario
+
+**Características importantes**
+
+Si el quote está presente en la cadena, este será duplicado. Los NA serán reemplazados con NULL 
+
+
+**Ejemplo:**
+
+```{r}
+sql_quote("abc", "'")
+sql_quote("abc", "c")
+#insert into my_table values('hi, my name''s tim.'); 
+sql_quote("I've had a good day", "'")
+sql_quote(c("abc", NA), "'")
+```
+
+## Función `sql_render()`
+**Propósito:** 
+
+Toma un objeto query y luego llama a una función que es genérica sobre la base de datos.
+
+**Argumentos**
+
+    query  Un objeto query
+    
+    con    Una conexion a una base de datos
+    
+    ...    Otros argumentos pasados a los métodos. Generalmente no
+           se usan.
+
+
+**Características importantes**
+
+Esas funciones son métodos que están implementados para diferentes bases de datos.
+
+
+**Ejemplo:**
+
+PENDIENTE
+
+## Función `sql_select()`
+**Propósito:** 
+
+Método genérico usado para ejecutar queries de SQL.
+
+**Argumentos**
+
+    sql_select(con, select, from, where = NULL, group_by = NULL,
+               having = NULL, order_by = NULL, limit = NULL, 
+               distinct = FALSE, ...)
+
+**Ejemplo:**
+
+PENDIENTE
+
+## Función `sql_semi_join()`
+**Propósito:** 
+
+Método genérico usado para ejecutar queries de SQL.
+
+**Argumentos**
+
+    sql_semi_join(con, x, y, anti = FALSE, by = NULL, ...)
+
+**Ejemplo:**
+
+PENDIENTE
+
+## Función `sql_set_op()`
+**Propósito:** 
+
+Método genérico usado para ejecutar queries de SQL.
+
+**Argumentos**
+
+    sql_set_op(con, x, y, method)
+
+
+**Ejemplo:**
+
+PENDIENTE
+
+## Función `sql_subquery()`
+**Propósito:** 
+
+Método genérico usado para ejecutar queries de SQL.
+
+**Argumentos**
+
+    sql_subquery(con, from, name = random_table_name(), ...)
+
+
+**Ejemplo:**
+
+PENDIENTE
+
+## Función `sql_translate_env()`
+**Propósito:** 
+
+Método genérico usado para ejecutar queries de SQL.
+
+**Argumentos**
+
+    con  Una conexión a bases de datos
+    
+**Características importantes:**
+Un conjunto de métodos de DBI(Data Base Interfaz) para cohesionar dplyr, y por lo tanto R, con DBI.
+    
+
+**Ejemplo:**
+
+PENDIENTE
+
+## Función `sql_translator()`
+**Propósito:** 
+
+Cuando se crea un paquete que mapea a una nueva fuente SQL se quiere, frecuentemente, proveer algunos mapeos adicionales desde comandos comunes de R a los comandos que sus tablas proveen, esta función lo hace sencillo.
+
+**Argumentos**
+
+    ...,     Nombres de las funciones, usadas para adicionar estandar       
+    .funs    de R a funciones sql. Especifique individualmente en ...
+             o de una lista de nombres en .funs
+    
+    .parent  La variante de SQL de la que debe heredarse. El default
+             provee las operaciones y funciones más comunes
+
+
+
+
+**Ejemplo:**
+```{r}
+# Genera un environment
+postgres_agg <- sql_translator(.parent = base_agg,
+  cor = sql_prefix("corr"),
+  cov = sql_prefix("covar_samp"),
+  sd =  sql_prefix("stddev_samp"),
+  var = sql_prefix("var_samp")
+)
+postgres_agg
+```
+
+## Función `sql_variant()`
+**Propósito:** 
+
+Cuando se crea un paquete que mapea a una nueva fuente SQL se quiere, frecuentemente, proveer algunos mapeos adicionales desde comandos comunes de R a los comandos que sus tablas proveen, esta función lo hace sencilla.
+
+**Argumentos**
+
+    scalar,     Las tres familias de funciones que una variante
+    aggregate,  de SQL puede suplir
+    window
+    
+    sql_variant(scalar = sql_translator(), aggregate = sql_translator(),
+                window = sql_translator())
+
+
+**Ejemplo:**
+```{r}
+postgres_var <- sql_variant(
+  base_scalar,
+  postgres_agg
+)
+postgres_var
+```
+
+## Función `sql_vector()`
+**Propósito:** 
+
+Esta función es crítica cuando escribimos funciones que traducen funciones de R a funciones a SQL. Generalmente una función de conversión debe tomar toda la entrada y regresar un objeto SQL.
+
+**Argumentos**
+
+    x         Objeto para escapar
+    
+    parens,    Controla el comportamieno cuando múltiples valores han
+    collapse   sido suministrados. parens es un argumento lógico.
+    
+    con        Conexión a una base de datos
+
+
+**Ejemplo:**
+
+PENDIENTE
+
+
+
+## Función `src()`
+**Propósito:** 
+
+Es el constructor estandar para src
+
+**Argumentos**
+
+    subclass    Nombre de la subclase. "src" es una clase abstracta de 
+                base, así que se debe suministrar este valor
+                
+    ...         Herramientas usadas por el objeto
+    
+
+**Características importantes**
+
+    src: Set Redundancy Compression - Métodos de comprensión de datos que
+         explotan redundancias entre grupos de datos individuales, en 
+         general, grupos de imágenes similares. Es decir, es un tipo de
+         base de datos
+
+
+**Ejemplo:**
+
+No aplica, se usa dentro de otras funciones de la familia src
+
+## Función `src_desc!()`
+**Propósito:** 
+
+Retorna los metadatos de una base de datos 
+
+**Argumentos**
+
+    x   Un data src
+
+**Ejemplo:**
+
+PENDIENTE
+```{r}
+nyc13<-nycflights13_sqlite()
+src_desc(nyc13)
+```
+
+
+## Función `src_df()`
+**Propósito:** 
+
+Hace posible referirse a un data frame ya sea remoto o local usando la misma sintaxis
+
+**Argumentos**
+
+    pkg,   Se debe proporcionar uno de los dos (package or enviroment) en 
+    env    el cual buscar los objetos
+
+
+
+
+**Ejemplo:**
+
+```{r}
+batting_df <- tbl(src_df("Lahman"), "Batting");batting_df
+```
+
+## Función `src_local()`
+**Propósito:** 
+
+Hace posible referirse a una tabla ya sea remota o local usando la misma sintaxis
+
+**Argumentos**
+
+    tbl    Nombre de la función usada para generar objetos tbl
+
+    pkg,   Se debe proporcionar uno de los dos (package or enviroment) en 
+    env    el cual buscar los objetos
+
+
+**Características:**
+
+No debe ser llamada directamente (por eso, no hay ejemplo)
+
+## Función `src_memdb()`
+**Propósito:** 
+
+Permite acceder facilmente a una sesión temporal en una base de datos de extensión SQLite almacenada en la memoria. 
+
+**Argumentos**
+
+  NO APLICA
+
+
+**Ejemplo:**
+
+```{r}
+src_memdb()
+df <- memdb_frame(x = runif(100), y = runif(100))
+df %>% arrange(x)
+```
+
+```{r}
+df %>% arrange(x) %>% show_query()
+```
+
+## Función `src_mysql()`
+**Propósito:** 
+
+Conecta con bases de datos de MySQL y de MariaDB (SGBD relacionales derivado directamente de MySQL)
+
+**Argumentos**
+
+    dbname      Nombre de la base de datos 
+    
+    host,       Nombre host y número port de la base de datos
+    port
+    
+    user,       Nombre de usuario y contraseña
+    password
+    
+    ...         Otros argumentos pasados al conector de bases de datos 
+                dbConnect{DBI}
+
+
+**Características importantes**
+
+    SGBD:  Sistema de Gestión de Bases de Datos
+    
+    En caso de que la base de datos sea local deje los parámetros como
+    sus defaults; si es remota entonces entregue los valores de estos
+    parámetros.
+
+    Host:  Nombre del alojamiento en la web que permite conectar con la
+           base de datos
+           
+    Port:  Número de dirección IP asociado al host (que permite iniciar
+           la comunicación con la base de datos otorgando el tipo de
+           protocolo)
+
+**Ejemplo:**
+
+```{r,eval=FALSE}
+
+require(RMySQL)
+# Connection basics
+# To connect to a database first create a src:
+my_db <- src_mysql(host = "blah.com", user = "hadley",
+  password = "pass")
+# Then reference a tbl within that src
+my_tbl <- tbl(my_db, "my_table")
+```
+
+
+## Función `src_postgres()`
+**Propósito:** 
+
+Sirve para conectar a una base de datos postgresql.
+
+**Argumentos**
+
+    dbname      Nombre de la base de datos 
+    
+    host,       Nombre host y número port de la base de datos
+    port
+    
+    user,       Nombre de usuario y contraseña
+    password
+    
+    ...         Otros argumentos pasados al conector de bases de datos 
+                dbConnect{DBI}
+
+
+**Características importantes**
+
+    SGBD:  Sistema de Gestión de Bases de Datos
+    
+    En caso de que la base de datos sea local deje los parámetros como
+    sus defaults; si es remota entonces entregue los valores de estos
+    parámetros.
+
+    Host:  Nombre del alojamiento en la web que permite conectar con la
+           base de datos
+           
+    Port:  Número de dirección IP asociado al host (que permite iniciar
+           la comunicación con la base de datos otorgando el tipo de
+           protocolo)
+
+    Postgresql: SGBD relacionales orientado a objetos de código libre
+
+
+**Ejemplo:**
+
+```{r,eval=FALSE}
+## Not run: 
+# Connection basics ---------------------------------------------------------
+# To connect to a database first create a src:
+my_db <- src_postgres(host = "blah.com", user = "hadley",
+  password = "pass")
+# Then reference a tbl within that src
+my_tbl <- tbl(my_db, "my_table")
+
+```
+
+## Función `src_sql()`
+**Propósito:** 
+
+Crear un objeto "sql src"
+
+**Argumentos**
+
+    subclass   Nombre de la subclase, este valor debe ser suministrado.
+    
+    con        La conexión del objeto
+    
+    ...        Herramientas usadas por el objeto
+
+**Características importantes**
+
+Está función está implementada dentro de otras funciones, por ello no se debe llamar directamente y no hay ejemplo
+
+
+## Función `src_sqlite()`
+**Propósito:** 
+
+Sirve para conectar a una base de datos SQLite.
+
+**Argumentos**
+
+    path      Ruta a la base de datos SQLite
+    
+    create    T/F   Si es falso, la ruta ya debe existir. Si es 
+              verdadero entonces creará una nueva base de datos
+              en el path (si este no existe) y conectará con la
+              base si el path existe
+    
+    
+
+
+**Ejemplo:**
+
+
+```{r,eval=FALSE}
+## No ejecute:
+# To connect to a database first create a src:
+my_db <- src_sqlite(path = tempfile(), create = TRUE)
+# Then reference a tbl within that src
+my_tbl <- tbl(my_db, "my_table")
+
+```
+```{r}
+my_db <- src_sqlite("my_db.sqlite3", create = T)
+copy_lahman(my_db)
+```
+
+
+## Función `src_tbls()`
+**Propósito:** 
+
+Enlista todas las tablas que se hallen en una fuente (source)
+
+**Argumentos**
+
+    x   Un data src
+
+
+**Ejemplo:**
+
+```{r}
+src_tbls(src_df("nycflights13"))
+src_tbls(my_db)
+```
+
+
+```{r}
+src_tbls(src_df("Lahman"))
+src_tbls(src_df("dplyr"))
+```
+
+## Función `starts_with()`
+**Propósito:** 
+
+Auxiliar en la función select() para las columnas que inician con un prefijo
+
+**Argumentos**
+
+    match          Una cadena 
+    
+    vars           Un vector de caracteres con los nombres de las
+                   variables. Cuando se llama desde dentro del select()
+                   se asumen son los nombres de la tabla.
+
+
+
+
+**Ejemplo:**
+
+```{r}
+starts_with("Species",v=c("1","2","Species"))
+starts_with("Species",v=c("1","Species"))
+select(iris, starts_with("Petal"))
+```
+
+## Función `summarise()`
+**Propósito:** 
+
+Resume múltiples valores en uno sólo
+
+**Argumentos**
+
+    .data   Una tbl
+    
+    ...     Nombre de funciones de resumen de valores
+
+**Características importantes**
+
+Funciones como min(), max(), mean()...
+
+
+**Ejemplo:**
+
+```{r}
+by_cyl <- mtcars %>% group_by(cyl)
+by_cyl %>% summarise(a = n(), b = a + 1)
+summarise(group_by(mtcars, cyl), m = mean(disp), sd = sd(disp))
+```
+
+## Función `summarise_()`
+**Propósito:** 
+
+Resume múltiples valores en uno sólo, versión de prueba de summarise()
+
+**Argumentos**
+
+    .data   Una tbl
+    
+    ...     Nombre de funciones de resumen de valores
+    
+    .dots   Usados para trabajar en evaluación no estandar
+
+**Características importantes**
+
+Funciones como min(), max(), mean()...
+
+
+**Ejemplo:**
+
+```{r}
+by_cyl <- mtcars %>% group_by(cyl)
+by_cyl %>% summarise_(a = ~n(), b = ~a + 1)
+summarise_(group_by(mtcars, cyl), m = ~mean(disp), sd = ~sd(disp))
+```
+
+## Función `summarise_all()`
+**Propósito:** 
+
+Aplica las funciones a todas las columnas, siempre y cuando, no sean las que agrupan.
+
+**Argumentos**
+
+    .tbl    Una tabla
+    
+    .funs   Lista de funciones, o un vector de caracteres con los
+            nombres de las funciones, o simplemente una función
+    
+    ...     Argumentos adicionales para las funciones. Sólo serán
+            evaluados una vez
+
+
+**Ejemplo:**
+```{r}
+by_species <- iris %>% group_by(Species)
+by_species %>% summarise_all(n_distinct)
+by_species %>% summarise_all(mean)
+```
+
+
+```{r}
+by_species %>% summarise_all(funs(min, max))
+by_species %>% summarise_all(c("min", "max"))
+```
+
+
+```{r}
+by_species %>% summarise_all(funs(med = median))
+by_species %>% summarise_all(funs(Q3 = quantile), probs = 0.75)
+```
+
+## Función `summarise_at()`
+**Propósito:** 
+
+Aplica las funciones a las columnas seleccionadas, siempre y cuando, no sean las que agrupan.
+
+**Argumentos**
+
+    .tbl    Una tabla
+    
+    .cols   Una lista de columnas, o un vector de caracteres de los
+            nombres de las columnas, o un vector numérico de las
+            posiciones de las columnas
+    
+    .funs   Lista de funciones, o un vector de caracteres con los
+            nombres de las funciones, o simplemente una función
+    
+    ...     Argumentos adicionales para las funciones. Sólo serán
+            evaluados una vez
+
+
+**Ejemplo:**
+```{r}
+by_species <- iris %>% group_by(Species)
+by_species %>% summarise_at(vars(Petal.Width), mean)
+by_species %>% summarise_at(vars(matches("Width")), mean)
+```
+
+```{r}
+by_species %>% summarise_at(c("Sepal.Width", "Petal.Width"), mean)
+by_species %>% summarise_at(c(1, 3), mean)
+```
+
+
+```{r}
+by_species %>% summarise_at(vars(Petal.Width, Sepal.Width), funs(min, max))
+by_species %>% summarise_at(vars(matches("Width")), funs(min, max))
+```
+
+## Función `summarise_each()`
+**Propósito:** 
+
+Aplica las funciones a cada una de las columnas, siempre y cuando, no sean las que agrupan.
+
+**Argumentos**
+
+    .tbl    Una tabla
+    
+    .funs   Lista de funciones, o un vector de caracteres con los
+            nombres de las funciones, o simplemente una función
+    
+    ...     Argumentos adicionales para las funciones. Sólo serán
+            evaluados una vez
+     
+**Características importantes**
+
+Estas funciones se reemplazaran eventualmente por las restantes de summarise
+
+
+**Ejemplo:**
+```{r}
+by_species <- iris %>% group_by(Species)
+by_species %>% summarise_each(funs(n_distinct))
+by_species %>% summarise_each(funs(mean))
+```
+
+
+```{r}
+by_species %>% summarise_each(funs(min, max))
+by_species %>% summarise_each(funs(med = median))
+```
+
+## Función `summarise_each_()`
+**Propósito:** 
+
+Aplica las funciones a cada una de las columnas, siempre y cuando, no sean las que agrupan. Versión de prueba
+
+**Argumentos**
+
+    .tbl    Una tabla
+    
+    .funs   Lista de funciones, o un vector de caracteres con los
+            nombres de las funciones, o simplemente una función
+    
+    vars     Variables a  excluir. Se puede especificar como en select
+     
+**Características importantes**
+
+Estas funciones se reemplazaran eventualmente por las restantes de summarise
+
+
+**Ejemplo:**
+```{r}
+by_species <- iris %>% group_by(Species)
+by_species %>% summarise_each_(funs(n_distinct),vars=everything())
+by_species %>% summarise_each(funs(mean),vars=-starts_with("Petal"))
+```
+
+## Función `summarise_if()`
+**Propósito:** 
+
+Opera igual que en summarise pero sólo sobre las columnas para las cuales el predicado resulta en TRUE
+
+**Argumentos**
+
+
+    .tbl    Una tabla
+    
+    .predicate  Una función predicado para ser aplicado a las 
+                columnas o a un vector lógico.
+    
+    .funs   Lista de funciones, o un vector de caracteres con los
+            nombres de las funciones, o simplemente una función
+    
+    ...     Argumentos adicionales para las funciones. Sólo serán
+            evaluados una vez
+
+
+
+
+**Ejemplo:**
+
+```{r}
+by_species <- iris %>% group_by(Species)
+by_species %>% summarise_if(is.numeric, mean)
+```
+
+## Función `summarize()`
+**Propósito:** 
+
+Resume múltiples valores en uno sólo
+
+**Argumentos**
+
+    .data   Una tbl
+    
+    ...     Nombre de funciones de resumen de valores
+
+**Características importantes**
+
+Funciones como min(), max(), mean()...
+
+
+**Ejemplo:**
+
+```{r}
+by_cyl <- mtcars %>% group_by(cyl)
+by_cyl %>% summarize(a = n(), b = a + 1)
+summarize(group_by(mtcars, cyl), m = mean(disp), sd = sd(disp))
+```
+
+## Función `summarize_()`
+**Propósito:** 
+
+Resume múltiples valores en uno sólo, versión de prueba de summarize()
+
+**Argumentos**
+
+    .data   Una tbl
+    
+    ...     Nombre de funciones de resumen de valores
+    
+    .dots   Usados para trabajar en evaluación no estandar
+
+**Características importantes**
+
+Funciones como min(), max(), mean()...
+
+
+**Ejemplo:**
+
+```{r}
+by_cyl <- mtcars %>% group_by(cyl)
+by_cyl %>% summarize_(a = ~n(), b = ~a + 1)
+summarize_(group_by(mtcars, cyl), m = ~mean(disp), sd = ~sd(disp))
+```
+
+## Función `summarize_all()`
+**Propósito:** 
+
+Aplica las funciones a todas las columnas, siempre y cuando, no sean las que agrupan.
+
+**Argumentos**
+
+    .tbl    Una tabla
+    
+    .funs   Lista de funciones, o un vector de caracteres con los
+            nombres de las funciones, o simplemente una función
+    
+    ...     Argumentos adicionales para las funciones. Sólo serán
+            evaluados una vez
+
+
+**Ejemplo:**
+```{r}
+by_species <- iris %>% group_by(Species)
+by_species %>% summarize_all(n_distinct)
+by_species %>% summarize_all(mean)
+```
+
+
+```{r}
+by_species %>% summarize_all(funs(min, max))
+by_species %>% summarize_all(c("min", "max"))
+```
+
+
+```{r}
+by_species %>% summarize_all(funs(med = median))
+by_species %>% summarize_all(funs(Q3 = quantile), probs = 0.75)
+```
+
+## Función `summarize_at()`
+**Propósito:** 
+
+Aplica las funciones a las columnas seleccionadas, siempre y cuando, no sean las que agrupan.
+
+**Argumentos**
+
+    .tbl    Una tabla
+    
+    .cols   Una lista de columnas, o un vector de caracteres de los
+            nombres de las columnas, o un vector numérico de las
+            posiciones de las columnas
+    
+    .funs   Lista de funciones, o un vector de caracteres con los
+            nombres de las funciones, o simplemente una función
+    
+    ...     Argumentos adicionales para las funciones. Sólo serán
+            evaluados una vez
+
+
+**Ejemplo:**
+```{r}
+by_species <- iris %>% group_by(Species)
+by_species %>% summarize_at(vars(Petal.Width), mean)
+by_species %>% summarize_at(vars(matches("Width")), mean)
+```
+
+```{r}
+by_species %>% summarize_at(c("Sepal.Width", "Petal.Width"), mean)
+by_species %>% summarize_at(c(1, 3), mean)
+```
+
+
+```{r}
+by_species %>% summarize_at(vars(Petal.Width, Sepal.Width), funs(min, max))
+by_species %>% summarize_at(vars(matches("Width")), funs(min, max))
+```
+
+## Función `summarize_each()`
+**Propósito:** 
+
+Aplica las funciones a cada una de las columnas, siempre y cuando, no sean las que agrupan.
+
+**Argumentos**
+
+    .tbl    Una tabla
+    
+    .funs   Lista de funciones, o un vector de caracteres con los
+            nombres de las funciones, o simplemente una función
+    
+    ...     Argumentos adicionales para las funciones. Sólo serán
+            evaluados una vez
+     
+**Características importantes**
+
+Estas funciones se reemplazaran eventualmente por las restantes de summarise
+
+
+**Ejemplo:**
+```{r}
+by_species <- iris %>% group_by(Species)
+by_species %>% summarize_each(funs(n_distinct))
+by_species %>% summarize_each(funs(mean))
+```
+
+
+```{r}
+by_species %>% summarize_each(funs(min, max))
+by_species %>% summarize_each(funs(med = median))
+```
+
+## Función `summarize_each_()`
+**Propósito:** 
+
+Aplica las funciones a cada una de las columnas, siempre y cuando, no sean las que agrupan. Versión de prueba
+
+**Argumentos**
+
+    .tbl    Una tabla
+    
+    .funs   Lista de funciones, o un vector de caracteres con los
+            nombres de las funciones, o simplemente una función
+    
+    vars     Variables a  excluir. Se puede especificar como en select
+     
+**Características importantes**
+
+Estas funciones se reemplazaran eventualmente por las restantes de summarise
+
+
+**Ejemplo:**
+```{r}
+by_species <- iris %>% group_by(Species)
+by_species %>% summarize_each_(funs(n_distinct),vars=everything())
+by_species %>% summarize_each(funs(mean),vars=-starts_with("Petal"))
+```
+
+## Función `summarize_if()`
+**Propósito:** 
+
+Opera igual que en summarize pero sólo sobre las columnas para las cuales el predicado resulta en TRUE
+
+**Argumentos**
+
+
+    .tbl    Una tabla
+    
+    .predicate  Una función predicado para ser aplicado a las 
+                columnas o a un vector lógico.
+    
+    .funs   Lista de funciones, o un vector de caracteres con los
+            nombres de las funciones, o simplemente una función
+    
+    ...     Argumentos adicionales para las funciones. Sólo serán
+            evaluados una vez
+
+
+
+
+**Ejemplo:**
+
+```{r}
+by_species <- iris %>% group_by(Species)
+by_species %>% summarize_if(is.numeric, mean)
+```
+
+## Función `tally()`
+**Propósito:** 
+
+Cuenta observaciones por grupo 
+
+**Argumentos**
+
+    x      Una tbl
+    
+    wt     (Opcional) Si se omite, contará el número de filas. Si se
+           especifica, contará el número de observaciones no faltantes
+           de la variable wt
+    
+    sort   T/F  Si es verdadero ordenará el resultado en forma 
+           descendente
+
+
+**Características importantes**
+
+Esta función llama a n() o a sum(n) dependiendo si se aplico por primera vez o si está siendo anidado
+
+
+**Ejemplo:**
+
+```{r}
+#Usando la librería Lahman
+batting_tbl <- tbl_df(Batting)
+tally(group_by(batting_tbl, yearID))
+
+```
+
+```{r}
+tally(group_by(batting_tbl, yearID), sort = TRUE)
+```
+
+
+```{r}
+# Multiples tally forman progresivamente grupos
+plays_by_year <- tally(group_by(batting_tbl, playerID, stint), sort = TRUE)
+head(plays_by_year)
+
+```
+
+```{r}
+tally(plays_by_year, sort = TRUE)
+tally(tally(plays_by_year))
+```
+
+
+```{r}
+# Se puede observar mejor si se usa el operador %>%
+batting_tbl %>% group_by(playerID) %>% tally(sort = TRUE)
+```
+
+## Función `tbl()`
+**Propósito:** 
+
+Crea una tabla desde una fuente de datos (src)
+
+**Argumentos**
+
+    src  Una fuente de datos
+    
+    ... Otros argumentos pasados a los métodos individuales
+
+
+
+**Ejemplo:**
+
+```{r}
+batting_df <- tbl(src_df("Lahman"), "Batting");head(batting_df)
+```
+
+```{r}
+air_df<- tbl(src_df("nycflights13"), "airlines");head(air_df)
+(flights_sqlite <- tbl(nycflights13_sqlite(), "flights"))
+```
+
+## Función `tbl_cube()`
+**Propósito:** 
+
+Una tbl de datos cúbica
+
+**Argumentos**
+
+    dimension    Una lista de vectores con sus nombres. Una dimensión es
+                 una variable que se conoce antes de que el experimento
+                 se ha realizado. Si las variables están anidadas y no
+                 cruzadas la mayor parte de la tabla va a estar vacia.
+                 Las dimensiones son generalmente variables continuas.
+    
+    measures     Una lista de arreglos con sus nombres(arrays). Una
+                 medida es lo que se va a medir y no es conocido hasta
+                 llevar a cabo el experimento. La dimensión de cada
+                 arreglo debe ser igual a la longitud de la dimension 
+                 (parámetro). Generalmente son valores continuos.
+
+
+**Características importantes**
+
+Los valores faltantes deben ser explicitamente NA's ya que la tbl_cube puede ser muy densa. Las tbl_cube aún son objetos experimentales y poco desarrollo de optimización se ha realizado, pero puede resultar útil si los datos ya tenian esta forma.
+
+
+**Ejemplo:**
+
+```{r}
+nasa
+```
+
+
+```{r}
+head(as.data.frame(nasa))
+```
+
+
+```{r}
+titanic <- as.tbl_cube(Titanic);titanic
+head(as.data.frame(titanic))
+```
+
+
+```{r}
+admit <- as.tbl_cube(UCBAdmissions);admit
+head(as.data.frame(admit))
+```
+
+## Función `tbl_df()`
+**Propósito:** 
+
+Crea un data frame tbl desde un data frame
+
+**Argumentos**
+
+    data    Un data frame 
+
+**Características importantes**
+
+Permite observar mejor los datos
+
+
+**Ejemplo:**
+```{r}
+ds <- tbl_df(mtcars)
+ds
+```
+
+
+
+```{r}
+batting <- tbl_df(Batting)
+dim(batting)
+colnames(batting)
+
+```
+
+
+```{r}
+batting
+```
+
+## Función `tbl_sql()`
+**Propósito:** 
+
+Crea una tbl SQL
+¡Este método no debe ser llamado por los usuarios!
+
+**Argumentos**
+
+    subclass    Nombre de la subclase
+    
+    ...         Se necesita para coincidir con lo genérico. No se
+                usa de otra manera
+                
+    vars        Si se conocen, los nombres de las variables en la tbl.
+                de esta manera será más rápido
+
+**Características importantes**
+
+Sólo debe ser usado por implementadores quienes estén creando funciones que extiendan el comportamiento básico de SQL
+
+**Ejemplo:** No aplica
+
+## Función `tbl_vars()`
+**Propósito:** 
+
+Lista las variables que se encuentran una tbl
+
+**Argumentos**
+
+     x    Una tbl
+
+
+
+
+**Ejemplo:**
+
+```{r}
+ds <- tbl_df(mtcars)
+tbl_vars(ds)
+```
+
+```{r}
+batting <- tbl_df(Batting)
+tbl_vars(batting)
+```
+
+## Función `test_frame!()`
+**Propósito:** 
+
+Sirve para crear una nueva tabla en cada fuente
+
+**Argumentos**
+
+    test_frame(..., srcs = test_srcs$get(), ignore = character())
+
+
+**Ejemplo:**
+
+```{r,eval=FALSE}
+##Not run:
+src_memdb()
+test_frame(x = 1:3, y = 3:1)
+##end(Not run)
+```
+
+## Función `test_load!()`
+**Propósito:** 
+
+Sirve para cargar un data frame existente en cada fuente
+
+**Argumentos**
+
+    test_load(df, name = random_table_name(), srcs = test_srcs$get(),
+              ignore = character())
+
+
+
+**Ejemplo:**
+
+```{r,eval=FALSE}
+## Not run: 
+test_load(mtcars)
+## End(Not run)
+```
+
+## Función `test_register_src!()`
+**Propósito:** 
+
+...
+
+**Argumentos**
+
+    test_register_src(name, src)
+
+
+
+
+**Ejemplo:**
+
+```{r,eval=FALSE}
+## Not run: 
+test_register_src("df", src_df(env = new.env()))
+test_register_src("sqlite", src_sqlite(":memory:", create = TRUE))
+## End(Not run)
+```
+
+## Función `tibble()`
+**Propósito:** 
+
+Crea data_frames ordenando los datos en las filas, en lugar de las columnas. 
+
+**Argumentos:** 
+
+    ...  Argumentos especificando la estructura del data_frame,
+         Los nombres de las variables deben ser fórmulas, y 
+         necesariamente aparecer antes de los datos
+
+**Características importantes**
+
+Función que se importa desde la librería tibble. Es útil para pequeñas tablas donde la legibilidad es importante
+
+
+**Ejemplo:**
+
+```{r}
+tibble(
+  ~colA, ~colB,
+  "a",   1,
+  "b",   2,
+  "c",   3
+)
+```
+
+## Función `top_n()`
+**Propósito:** 
+
+Selecciona las primeras (o las últimas) n filas (por valor) de una tbl
+
+**Argumentos**
+
+    x   Una tbl para filtrar
+    
+    n   Número de filas para retornar. Si x está agrupado, este es
+        el número de filas por grupo
+    
+    wt  (Opcional) La variable a usar para el ordenamiento. El default
+        es la última variable en la tbl
+
+
+**Características importantes**
+
+Usa las funciones filter() y min_rank() para seleccionar las primeras o últimas funciones dentro de cada grupo
+
+
+**Ejemplo:**
+
+```{r}
+df <- data.frame(x = c(10, 4, 1, 6, 3, 1, 1))
+df %>% top_n(2)
+```
+
+
+```{r}
+# Los negativos dan los más pequeños. En este caso se generan
+# más de dos porque hay valores repetidos
+df %>% top_n(-2)
+```
+
+
+
+```{r}
+# Encuentre a los 10 jugadores con más juegos
+tbl_df(Batting) %>%group_by(playerID) %>%
+  tally(G) %>% top_n(10)
+```
+
+```{r}
+#Encontrar el año con más juegos por jugador
+tbl_df(Batting) %>% group_by(playerID) %>% top_n(1, G)
+```
+
+## Función `translate_sql()`
+**Propósito:** 
+
+Traducir una expresión a sql
+
+**Argumentos**
+
+    ...            Expresiones para traducir.  
+    
+    con            (Opcional) Una conexión a una base de datos para
+                   controlar los detalles de la traducción. El default
+                   NULL genera ANSI SQL
+    
+    vars           Un vector de caracteres dando los nombres de las
+                   variables en la fuente de datos remota. Si es
+                   suminstrada, se llamará a partial_eval para interpolar
+                   en los valores desde variables locales
+    
+    vars_group,    Variables para ordenar y agrupar usadas en las
+    vars_order     funciones ventana
+
+    
+    window         Use FALSE para suprimir la generación de declaraciones
+                   OVER usadas por las funciones ventana. Esto es
+                   necesario cuando se generan resumenes agrupados de 
+                   SQL
+
+
+**Características importantes**
+
+Función ventana (window function): Es una función con n valores entrantes y que genera n respuestas, por ejemplo, cumsum()
+
+Para el ejemplo, el operador xor() es el "o" disyuntivo, es decir, sólo es verdadero cuando uno de los dos es verdadero y el otro falso
+
+
+**Ejemplo:**
+```{r}
+# Objetos matemáticos son traducidos de manera sencilla
+translate_sql(x + 1)
+translate_sql(sin(x) + tan(y))
+```
+
+```{r}
+# Operadores lógicos son convertidos a sus equivalentes en SQL
+translate_sql(x < 5 & !(y >= 5))
+# xor() no tiene un equivalente directo en SQL
+translate_sql(xor(x, y))
+# "Si" se traduce como "case"-"when"
+translate_sql(if (x > 5) "big" else "small")
+```
+
+```{r}
+# Funciones infix  se traducen a SQL removiendo %
+translate_sql(first %like% "Had*")
+translate_sql(first %is% NULL)
+translate_sql(first %in% c("John", "Roger", "Robert"))
+```
+
+```{r}
+# Hay que tener cuidado si se quieren enteros
+translate_sql(x == 1)
+translate_sql(x == 1L)
+```
+
+```{r}
+# Traducción con variables conocidas
+# Si las variables en el conjunto de datos son conocidas, 
+# translate_sql las interpolará en valores literales
+# en el Global Environment
+
+x <- 10
+translate_sql(mpg > x)
+translate_sql(mpg > x, vars = names(mtcars))
+```
+
+```{r}
+# Por default todos los cálculos ocurren en SQL
+translate_sql(cyl == 2 + 2, vars = names(mtcars))
+# Use "local" para forzar a una evaluación local
+translate_sql(cyl == local(2 + 2), vars = names(mtcars))
+
+
+```
+
+
+```{r}
+# Tambien se necesita si se llama a una función local
+inc <- function(x) x + 1
+translate_sql(mpg > inc(x), vars = names(mtcars))
+translate_sql(mpg > local(inc(x)), vars = names(mtcars))
+
+```
+
+
+
+```{r}
+# Traducción con funciones ventana
+# Las funciones conocidas generarán automáticamente un mensaje OVER()
+translate_sql(mpg > mean(mpg))
+
+# Suprimalo con window = FALSE
+translate_sql(mpg > mean(mpg), window = FALSE)
+
+# vars_group controla las particiones:
+translate_sql(mpg > mean(mpg), vars_group = "cyl")
+
+```
+
+
+```{r}
+# y vars_order controla el ordenamiento si las funciones lo necesitan
+translate_sql(cumsum(mpg))
+translate_sql(cumsum(mpg), vars_order = "mpg")
+```
+
+
+## Función `translate_sql_()`
+**Propósito:** 
+
+Traducir una expresión a sql, versión en desarrollo
+
+**Argumentos**
+
+    dots           Expresiones para traducir.  
+    
+    con            (Opcional) Una conexión a una base de datos para
+                   controlar los detalles de la traducción. El default
+                   NULL genera ANSI SQL
+    
+    vars           Un vector de caracteres dando los nombres de las
+                   variables en la fuente de datos remota. Si es
+                   suminstrada, se llamará a partial_eval para interpolar
+                   en los valores desde variables locales
+    
+    vars_group,    Variables para ordenar y agrupar usadas en las
+    vars_order     funciones ventana
+
+    
+    window         Use FALSE para suprimir la generación de declaraciones
+                   OVER usadas por las funciones ventana. Esto es
+                   necesario cuando se generan resumenes agrupados de 
+                   SQL
+
+
+
+**Ejemplo:**
+
+```{r}
+# Si ya tiene un quote, use translate_sql_:
+x <- quote(y + 1 / sin(t))
+translate_sql_(list(x))
+translate_sql_(quote(x + 1))
+```
+
+```{r,eval=FALSE}
+translate_sql_(quote(x < 5 & !(y >= 5)))
+translate_sql_(quote(xor(x, y)))
+translate_sql_(quote(cyl == local(2 + 2)), vars = names(mtcars))
+inc <- function(x) x + 1
+translate_sql_(quote(mpg > local(inc(x))), vars = names(mtcars))
+```
+
+## Función `transmute()`
+**Propósito:** 
+
+Crea nuevas variables eliminando las existentes
+
+**Argumentos**
+
+    .data  Una tbl
+    
+    ...    Expresión para crear la nueva variable.
+
+
+
+**Ejemplo:**
+
+```{r}
+transmute(mtcars, displ_l = disp / 61.0237)%>%head()
+```
+
+## Función `transmute_()`
+**Propósito:** 
+
+Crea nuevas variables eliminando las existentes. Versión de desarrollo de transmute
+
+**Argumentos**
+
+    .data  Una tbl
+    
+    ...    Expresión para crear la nueva variable.
+        
+    .dots  Usado en evaluación no estandar
+
+
+
+**Ejemplo:**
+
+```{r}
+transmute_(mtcars, displ_l = "disp / 61.0237")%>%head()
+```
+
+## Función `trunc_mat()`
+**Propósito:** 
+
+Sirve para mostrar un número determinado de filas y de columnas en pantalla
+
+**Argumentos**
+
+    x         Objeto para mostrar
+    
+    n         Número de filas para mostrar. Si es NULL (default), 
+              mostrara todas las filas. 
+    
+    width     Ancho del texto a generar. Si es NULL(default) significará
+              usar getOption("tibble.width") o getOption("width"), las
+              cuales reproducen sólo lo que ocupe el espacio en pantalla.
+                            
+
+**Características importantes**
+
+Variable importada desde tibble.
+
+
+**Ejemplo:**
+
+```{r,eval=TRUE,echo=TRUE,results='hide',warning=FALSE,error=FALSE,message=FALSE}
+require(tibble)
+```
+
+```{r}
+trunc_mat(mtcars)
+```
+
+## Función `type_sum()`
+**Propósito:** 
+
+Da un breve resumen del tipo de objeto.
+
+**Argumentos**
+
+    x   Un objeto a resumir
+
+**Características importantes**
+
+Función importada desde la librería tibble.
+
+
+**Ejemplo:**
+
+```{r}
+type_sum(dt)
+type_sum(mtcars)
+#type_sum(p)
+type_sum(top_n)
+```
+
+## Función `ungroup()`
+**Propósito:** 
+
+Remover los grupos existentes de una tbl
+
+**Argumentos**
+
+    x    Una tbl
+    
+    ...  Argumentos adicionales que pueden ser usados por los métodos
+
+
+
+**Ejemplo:**
+
+```{r}
+grouped <- group_by(mtcars, cyl)
+data<-ungroup(grouped)
+groups(grouped)
+groups(data)
+```
+
+## Función `union()`
+**Propósito:** 
+
+Une las observaciones de dos objetos, si algúno está repetido lo incluye una sóla vez
+
+**Argumentos**
+
+    x, y     Objetos a los cuales aplicar la unión
+    
+    ...      Otros argumentos pasados a los métodos
+
+**Características importantes**
+
+No se puede unir dos objetos que no tengan las mismas columnas
+
+
+**Ejemplo:**
+
+```{r}
+mtcars$model <- rownames(mtcars)
+first <- mtcars[1:20, ]
+second <- mtcars[10:32, ]
+nrow(union(first, second))
+```
+
+## Función `union_all()`
+**Propósito:** 
+
+Une las observaciones de dos objetos, si algúno está repetido lo incluye el número de veces que aparezca
+
+**Argumentos**
+
+    x, y     Objetos a los cuales aplicar la unión completa
+    
+    ...      Otros argumentos pasados a los métodos
+
+**Características importantes**
+
+Se puede unir dos objetos que no tengan las mismas columnas, en todas las partes donde no hay información se pone NA
+
+
+**Ejemplo:**
+
+```{r}
+mtcars$model <- rownames(mtcars)
+first <- mtcars[1:20, ]
+second <- mtcars[10:32, ]
+nrow(union_all(first, second))
+k<-data.frame(a=1:5,b=5:9)
+l<-data.frame(c=1:4)
+union_all(k,l)
+```
+
+## Función `vars()`
+**Propósito:** 
+
+Auxiliar para las funciones summarise y mutate que proporciona semántica para excluir e incluir variables. 
+
+**Argumentos**
+
+    ...  Variables para incluir/excluir en mutate/summarise
+
+**Características importantes**
+
+Su semántica es similar a la de select()
+
+
+**Ejemplo:**
+
+```{r}
+by_species <- iris %>% group_by(Species)
+by_species %>% summarise_at(vars(matches("Width")), mean)
+```
+
+## Función `with_order()`
+**Propósito:** 
+
+Función para ordenar los parámetros de una función ventana de dplyr
+
+**Argumentos**
+
+    order_by  Vector que indica como ordenar
+    
+    fun       Función ventana (n valores entrantes, produce
+              n resultados)
+    
+    x, ...    Argumentos para fun
+
+
+
+**Ejemplo:**
+
+```{r}
+with_order(1:5, cumsum, 5:1)
+#Los suma y los entrega en el orden del primer parámetro
+with_order(c(3,2,1,4,6), cumsum, 1:5)
+```
+
